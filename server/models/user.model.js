@@ -1,4 +1,4 @@
-const { sequelize } = require("../../config/database");
+const { sequelize } = require("../config/database");
 const { DataTypes, UUID } = require("sequelize");
 
 const User = sequelize.define("User", {
@@ -27,12 +27,12 @@ const User = sequelize.define("User", {
   },
 });
 
-User.beforeSync(() => {
+/* User.beforeSync(() => {
   console.log("before creating user table");
 });
 
 User.afterSync(() => {
   console.log("after creating user table");
-});
+}); */
 
 module.exports = { User };

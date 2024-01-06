@@ -3,7 +3,7 @@ const { User } = require("../models/user.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-//Max age
+//Max age -3 days
 const maxAge = 3 * 24 * 60 * 60;
 
 const createToken = (userId) => {
@@ -68,7 +68,7 @@ const userSignUp = async (req, res) => {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });
-    res.status(201).json({ user: user.userId });
+    res.status(201).redirect('/');
   } catch (error) {
     console.error("Error in creating user", error);
   }
@@ -102,13 +102,17 @@ const userlogin = async (req, res) => {
       httpOnly: true,
       maxAge: maxAge * 1000,
     });
-    res.status(200).json({ user: user.userId });
+    res.status(200).redirect('/');
   } catch (error) {
     console.log(error);
   }
 };
 
-const logout = (req, res) => {};
+const logout = (req, res) => {
+  res.cookie('jwt','',{maxAge: 1
+  });
+  res.redirect('/user/login');
+};
 
 module.exports = {
   getLoginPage,

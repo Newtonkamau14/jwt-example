@@ -2,11 +2,25 @@
 <html>
   <head>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-    <a href="/user/signup">Signup</a>
+    <div style="margin: auto; display: block; width: 75%; padding: 20px;">
+      <h1 style="margin-bottom: 50px;">Rick and Morty Api</h1>
+      <% if(user) { %>
+        <p>Welcome <%= user.username %></p>
+        <a href="/user/logout" class="auth-button">Logout</a>
+      <% } else { %>
+        <a class="auth-button" href="/user/signup">Signup</a>
+        <a class="auth-button" href="/user/login">Login</a>
+      <% } %>
+      
+
+      <img class="coverphoto" src="/images/Painting.jpeg" alt="cover photo">
+      <div>
+        <a class="button_slide slide_right" href="/characters" target="_blank" rel="noopener noreferrer">Characters</a>
+
+      </div>
+    </div>
   </body>
 </html>
