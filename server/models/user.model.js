@@ -1,5 +1,5 @@
 const { sequelize } = require("../config/database");
-const { DataTypes, UUID } = require("sequelize");
+const { DataTypes } = require("sequelize");
 
 const User = sequelize.define("User", {
   userId: {
@@ -25,14 +25,16 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+},{
+  paranoid: true
 });
 
-/* User.beforeSync(() => {
+User.beforeSync(() => {
   console.log("before creating user table");
 });
 
 User.afterSync(() => {
   console.log("after creating user table");
-}); */
+});
 
 module.exports = { User };

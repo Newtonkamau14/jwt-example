@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
+const { requireAuth } = require("../middleware/middleware");
 
 /* GET users listing. */
 router
@@ -14,5 +15,20 @@ router
   .post(userController.userlogin);
 
 router.route("/logout").get(userController.logout);
+
+router
+  .route("/changepassword")
+  .get(requireAuth, userController.getChangePasswordPage)
+  .post(requireAuth, userController.changePassword);
+
+router
+  .route("/deleteaccount")
+  .get(requireAuth, userController.getDeleteAccountPage)
+  .post(requireAuth, userController.deleteAccount);
+
+router
+  .route("/sendotp")
+  .get(requireAuth, userController.getSendOtpPage)
+  .post(requireAuth, userController.sendOtp);
 
 module.exports = router;

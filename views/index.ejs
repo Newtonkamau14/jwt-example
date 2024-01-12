@@ -3,23 +3,53 @@
   <head>
     <title><%= title %></title>
     <link rel="stylesheet" href="/stylesheets/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Arvo&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div style="margin: auto; display: block; width: 75%; padding: 20px;">
-      <h1 style="margin-bottom: 50px;">Rick and Morty Api</h1>
+    <nav role="navigation" class="primary-navigation">
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li>
+          <% if(user) { %>
+            <a href="#"><%= user.username %> <span style="margin-left: 5px;"><i class="fa-solid fa-sort-down"></i></span></a>
+          <ul class="dropdown">
+            <li><span style="color: #ffc107; margin-right: 5px;"><i class="fa-solid fa-repeat"></i></span><a style="color: #ffc107;" href="/user/changepassword">Change Password</a></li>
+            <li><span style="color: #6c757d; margin-right: 5px;"><i class="fa-solid fa-user-minus"></i></span><a style="color: #6c757d;" href="/user/logout">Logout</a></li>
+            <li><span style="color: #DC3545;"><i class="fa-solid fa-trash"></i></span><a style="color: #DC3545; margin-left: 5px;" href="/user/deleteaccount">Delete Account</a></li>
+          </ul>
+          <% } %>
+        </li>
+      </ul>
+    </nav>
+    <div style="margin: auto; display: block; width: 75%; padding: 20px">
+      <h1 style="margin-bottom: 50px">Rick and Morty Api</h1>
       <% if(user) { %>
-        <p>Welcome <%= user.username %></p>
-        <a href="/user/logout" class="auth-button">Logout</a>
+      <p>Welcome <%= user.username %></p>
       <% } else { %>
-        <a class="auth-button" href="/user/signup">Signup</a>
-        <a class="auth-button" href="/user/login">Login</a>
+      <a class="auth-button" href="/user/signup">Signup</a>
+      <a class="auth-button" href="/user/login">Login</a>
       <% } %>
-      
 
-      <img class="coverphoto" src="/images/Painting.jpeg" alt="cover photo">
+      <!--  <img class="coverphoto" src="/images/Painting.jpeg" alt="cover photo" /> -->
       <div>
-        <a class="button_slide slide_right" href="/characters" target="_blank" rel="noopener noreferrer">Characters</a>
-
+        <a
+          class="button_slide slide_right"
+          href="/characters"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Characters</a
+        >
       </div>
     </div>
   </body>
