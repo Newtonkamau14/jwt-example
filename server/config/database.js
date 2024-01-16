@@ -2,49 +2,34 @@ const mysql = require("mysql2");
 const { Sequelize } = require("sequelize");
 
 // Open the connection to MySQL server
-const connection = mysql.createConnection({
-  host: process.env.HOST,
-  user: process.env.DBUSER,
-  password: process.env.PASSWORD,
-});
-
-// Connect to the database using Sequelize
 const sequelize = new Sequelize(
-    process.env.DATABASE,
-    process.env.DBUSER,
-    process.env.PASSWORD,
-    {
-      dialect: "mysql",
-      host: process.env.HOST,
-    }
-  );
-
-try {
-  connection.query(
-    `CREATE DATABASE IF NOT EXISTS jwt_example`,
-    async function (err, results) {
-      if (results) {
-        console.log("DB WAS CREATED");
-
-        try {
-          await sequelize.authenticate();
-          await sequelize.sync();
-          console.log("Connected to database using Sequelize");
-        } catch (error) {
-          console.log(error);
-        }
-
-        // Close the connection
-        connection.end();
-      } else {
-        console.log("db was not created");
+  process.env.DATABASE,
+  process.env.DBUSER,
+  process.env.PASSWORD,
+  {
+    dialect: "mysql",
+    host: process.env.HOST,
+    dialectOptions: {
+      ssl: {
+        rejectUnauthorized: true,
       }
     }
-  );
-} catch (error) {
-  console.log(error);
-}
+  },
+);
 
+const connectDb = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Connection has been established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  }
+};
+
+connectDb();
 
 
 module.exports = { sequelize };
+
+
+

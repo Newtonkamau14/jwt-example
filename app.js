@@ -4,7 +4,6 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-
 const indexRouter = require('./server/routes/index');
 const usersRouter = require('./server/routes/users');
 const {checkUser} =require('./server/middleware/middleware')
@@ -42,7 +41,5 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-
-//cooki
 
 module.exports = app;
