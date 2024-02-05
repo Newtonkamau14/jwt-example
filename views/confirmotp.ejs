@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <title><%= title %></title>
+  </head>
+  <body>
+    <form action="/user/confirmotp" method="post">
+      <div class="wrapper">
+        <h1>Confirm OTP</h1>
+
+        <input type="email" placeholder="Enter email" name="email"/>
+        <input type="password" placeholder="Enter OTP" name="otp" id="otp">
+        <input type="password" placeholder="Confirm OTP" name="confirmotp" id="confirmotp">
+        <div class="error"></div>
+        <button type="submit">Confirm OTP</button>
+      </div>
+    </form>
+
+    <script>
+        const otp = document.querySelector('#otp');
+        const confirmotp = document.querySelector('#confirmotp')
+        const form = document.querySelector('form')
+        const error = document.querySelector('.error')
+
+        form.addEventListener('input',(e) => {
+          let otp = form.otp.value;
+          let confirmotp = form.confirmotp.value;
+
+          error.textContent = '';
+
+          if(otp != confirmotp){
+            error.textContent = 'The one time passwords do not match'
+            error.style.color = '#DC3545';
+          }
+          else {
+            error.textContent = ''
+          }
+
+        })
+      </script>
+  </body>
+</html>

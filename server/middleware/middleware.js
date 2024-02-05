@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
+const { rateLimit} = require('express-rate-limit')
 const { User } = require("../models/user.model");
+
 
 const requireAuth = (req, res, next) => {
   const token = req.cookies.jwt;
-
   //   check if jwt exists & is verified
   if (token) {
     jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
@@ -21,7 +22,6 @@ const requireAuth = (req, res, next) => {
 //check current user
 const checkUser = (req, res, next) => {
   const token = req.cookies.jwt;
-
   if (token) {
     jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
       if (err) {
@@ -40,4 +40,25 @@ const checkUser = (req, res, next) => {
   }
 };
 
-module.exports = { requireAuth, checkUser };
+
+//Rate limiter
+const limiter = rateLimit({
+  windowMs: 2 * 60 * 1000,
+  limit: 2,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: function(req,res,next){
+    res.status(429).json({
+      message: "Too many requests, please try again later."
+    })
+  },
+  /* keyGenerator: function(req) {
+    const decodedToken = jwt.verify(token,process.env.JWT_SECRET)
+    return decodedToken.userId;
+  }  */
+});
+
+
+
+
+module.exports = { requireAuth, checkUser,limiter };

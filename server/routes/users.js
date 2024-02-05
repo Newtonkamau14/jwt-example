@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/userController");
-const { requireAuth } = require("../middleware/middleware");
+const { requireAuth, limiter } = require("../middleware/middleware");
 
 /* GET users listing. */
 router
@@ -29,6 +29,11 @@ router
 router
   .route("/sendotp")
   .get(requireAuth, userController.getSendOtpPage)
-  .post(requireAuth, userController.sendOtp);
+  .post(requireAuth,limiter, userController.sendOtp);
+
+router
+  .route("/confirmotp")
+  .get(userController.getConfirmOtpPage)
+  .post(userController.confirmOtp);
 
 module.exports = router;

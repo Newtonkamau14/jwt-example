@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <title><%= title %></title>
+  </head>
+  <body>
+    <form action="/user/sendotp" method="post">
+      <div class="wrapper">
+        <h1>Send OTP</h1>
+
+        <input type="email" placeholder="Enter email" name="email" value="<%= email %>"/>
+        <button type="submit">Send OTP</button>
+      </div>
+    </form>
+  </body>
+</html>

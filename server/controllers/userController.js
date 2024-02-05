@@ -2,6 +2,8 @@ const { Op } = require("sequelize");
 const { User } = require("../models/user.model");
 const { otpGenerator } = require("../utils/utils");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
+const { Otp } = require("../models/otp.model");
 const jwt = require("jsonwebtoken");
 
 //Max age 3 days
@@ -28,15 +30,14 @@ const getLoginPage = (req, res) => {
 const userSignUp = async (req, res) => {
   try {
     if (!req.body.username || !req.body.email || !req.body.password) {
-      return res
-        .status(400)
-        .render("signup",{
-          title: "Signup",
-          message: "Missing required fields in the form"
-        })
+      return res.status(400).render("signup", {
+        title: "Signup",
+        message: "Missing required fields in the form",
+      });
     }
 
     const userExists = await User.findOne({
+      attributes: ["username", "email"],
       where: {
         [Op.or]: [
           {
@@ -81,13 +82,14 @@ const userSignUp = async (req, res) => {
 const userlogin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (!req.body.username || !req.body.password) {
+    if (!username || !password) {
       return res
         .status(400)
         .json({ message: "Missing required fields in the form" });
     }
 
     const user = await User.findOne({
+      attributes: ["username", "password"],
       where: {
         username: req.body.username,
       },
@@ -116,23 +118,140 @@ const logout = (req, res) => {
   res.redirect("/user/login");
 };
 
-const getSendOtpPage = (req, res) => {
-  res.render("sendotp", {
-    title: "Send OTP",
-  });
+const getSendOtpPage = async (req, res) => {
+  try {
+    const token = req.cookies.jwt;
+
+    const decodedToken = await new Promise((resolve, reject) => {
+      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(decodedToken);
+        }
+      });
+    });
+
+    if (!decodedToken) {
+      res.redirect("/");
+      return;
+    }
+
+    const user = await User.findOne({
+      attributes: ["email"],
+      where: {
+        userId: decodedToken.userId,
+      },
+    });
+
+    const email = user.email;
+    res.render("sendotp", {
+      title: "Send OTP",
+      email: email,
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect("/");
+  }
 };
 
 const sendOtp = async (req, res) => {
   try {
-    const user = await User.findOne({
-      where: {
-        email: req.body.email,
+    if (!req.body.email) {
+      return res
+        .status(400)
+        .json({ message: "Missing required fields in the form" });
+    }
+    let randStr = otpGenerator();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.APPPASSWORD,
       },
     });
 
-    if (user) {
+    const otp = await Otp.create({
+      email: req.body.email,
+      otp: randStr,
+    });
+
+    const option = {
+      from: process.env.EMAIL,
+      to: req.body.email,
+      subject: `One Time Password`,
+      text: `This is the One Time Password ${randStr}.It will expire after being used`,
+    };
+
+    const sendMailPromise = (option) => {
+      return new Promise((resolve, reject) => {
+        transporter.sendMail(option, (error, info) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(info);
+          }
+        });
+      });
+    };
+
+    try {
+      await sendMailPromise(option);
+      res.redirect("/user/confirmotp");
+    } catch (error) {
+      console.error(error);
+      res.redirect("/user/sendotp");
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getConfirmOtpPage = async (req, res) => {
+  res.render("confirmotp", {
+    title: "Confirm Otp",
+  });
+};
+
+const confirmOtp = async (req, res) => {
+  try {
+    
+    const userExists = await User.findOne({
+      attributes: ['email'],
+      where: {
+        email: req.body.email
+      }
+    });
+
+    console.log(userExists)
+
+    if(!userExists) {
+      return res.status(401).json({ message: "User does not exist" });
+    }
+
+    const otpStored = await Otp.findOne({
+      where: {
+        email: userExists.email
+      },
+      order: [["createdAt", "DESC"]],
+    });
+
+    if(otpStored.otp === req.body.otp){
+      await Otp.destroy({
+        where: {
+          email: userExists.email
+        }
+      })
+      res.redirect("/user/changepassword")
+    }
+    else {
+      res.status(403).json("Wrong one time password has been entered")
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 const getChangePasswordPage = async (req, res) => {
@@ -152,7 +271,10 @@ const changePassword = async (req, res) => {
     }
 
     // Find the user
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      attributes: ["email", "password"],
+      where: { email },
+    });
 
     // Check if user exists
     if (!user) {
@@ -196,29 +318,38 @@ const getDeleteAccountPage = (req, res) => {
 };
 
 /* Account can be deleted after 7 days and will not be restored */
-const deleteAccount = (req, res) => {
+const deleteAccount = async (req, res) => {
   try {
     const token = req.cookies.jwt;
 
-    jwt.verify(token,process.env.JWT_SECRET,async(err,decodedToken)=>{
-      if(err){
-        res.render("deleteaccount", {
-          title: "Delete Account",
-        });
-      }
-      else{
-        await User.destroy({
-          where: {
-            userId: decodedToken.userId
-          }
-        });
-      }
-    });
-    res.cookie("jwt", "", { maxAge: 1 });
-    res.redirect("/")
+    try {
+      const decodedToken = await jwt.verify(token, process.env.JWT_SECRET);
 
+      await User.destroy({
+        where: {
+          userId: decodedToken.userId,
+        },
+      });
+    } catch (err) {
+      // Handle token verification failure
+      console.error("Token verification failed:", err);
+      res.render("deleteaccount", {
+        title: "Delete Account",
+        error: "Token verification failed",
+      });
+      return;
+    }
+
+    // Clear the cookie after successful deletion
+    res.cookie("jwt", "", { maxAge: 1 });
+    res.redirect("/");
   } catch (error) {
-      console.log("A problem was encoutered when deleting the account.Please try again later")
+    console.error("Error deleting account:", error);
+    res.render("deleteaccount", {
+      title: "Delete Account",
+      error:
+        "An error occurred while deleting the account. Please try again later.",
+    });
   }
 };
 
@@ -234,4 +365,6 @@ module.exports = {
   deleteAccount,
   getSendOtpPage,
   sendOtp,
+  getConfirmOtpPage,
+  confirmOtp,
 };

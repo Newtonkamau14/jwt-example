@@ -6,9 +6,10 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const indexRouter = require('./server/routes/index');
 const usersRouter = require('./server/routes/users');
-const {checkUser} =require('./server/middleware/middleware')
+const {checkUser,limiter} =require('./server/middleware/middleware')
 
 const app = express();
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -20,11 +21,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('*',checkUser)
-
-
 app.use('/', indexRouter);
 app.use('/user', usersRouter);
-
+app.use('/user/sendotp',limiter)
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

@@ -10,9 +10,6 @@ const Otp = sequelize.define(
       allowNull: false,
       primaryKey: true,
       unique: true,
-      validate: {
-        len: [6, 6],
-      },
     },
     email: {
       type: DataTypes.STRING,
